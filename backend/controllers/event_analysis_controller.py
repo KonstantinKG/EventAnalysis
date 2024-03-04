@@ -127,8 +127,11 @@ class EventAnalysisController:
             event_row = await self._db.get_event(id=event_id)
             event = Event(id=event_row[0], ticket_url=event_row[-1])
 
-            parser = IrlSxodimParser(config=self._config, logger=self._logger, db=self._db)
-            await parser.parse_event_prices(event=event, available_date=available_date)
+            try:
+                parser = IrlSxodimParser(config=self._config, logger=self._logger, db=self._db)
+                await parser.parse_event_prices(event=event, available_date=available_date)
+            except Exception as e:
+                self._logger.error(f"{e} {traceback.format_exc()}")
 
             prices = await self._db.get_event_prices(id=event_id, date=available_date)
             data = {}

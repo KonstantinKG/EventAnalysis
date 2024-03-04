@@ -1,0 +1,233 @@
+openapi: 3.0.0
+info:
+  title: Event Analysis API
+  version: 1.0.0
+paths:
+  /get:
+    get:
+      summary: Get event details by ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EventDetails'
+  /all:
+    get:
+      summary: Get a paginated list of events
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PaginatedEventList'
+  /get/filters:
+    get:
+      summary: Get filters for events
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EventFilters'
+  /get/prices/dates:
+    get:
+      summary: Get available dates for event prices
+      parameters:
+        - name: event_id
+          in: query
+          description: Event ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AvailableDates'
+  /get/prices:
+    get:
+      summary: Get event prices
+      parameters:
+        - name: event_id
+          in: query
+          description: Event ID
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Date for event prices
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EventPrices'
+
+components:
+  schemas:
+    EventDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        photo:
+          type: string
+        description:
+          type: string
+        short_description:
+          type: string
+        phone:
+          type: string
+        link:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        url:
+          type: string
+        location:
+          $ref: '#/components/schemas/Location'
+        category:
+          $ref: '#/components/schemas/Category'
+        city:
+          $ref: '#/components/schemas/City'
+
+    PaginatedEventList:
+      type: object
+      properties:
+        current:
+          type: integer
+        pages:
+          type: integer
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/BasicEventInfo'
+
+    EventFilters:
+      type: object
+      properties:
+        cities:
+          type: array
+          items:
+            $ref: '#/components/schemas/City'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        dates:
+          type: array
+          items:
+            type: string
+            format: date-time
+
+    AvailableDates:
+      type: array
+      items:
+        type: string
+        format: date-time
+
+    EventPrices:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          $ref: '#/components/schemas/EventPrice'
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    City:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    BasicEventInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        photo:
+          type: string
+        description:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        url:
+          type: string
+
+    EventPrice:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date-time
+        price:
+          type: number
+        seat:
+          type: string
+        available:
+          type: boolean

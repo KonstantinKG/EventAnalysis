@@ -1,7 +1,8 @@
 {
-  "app": "event-analysis-parsers",
+  "app": "event_analysis_parsers",
+  "files": "../files",
   "connection": {
-    "sqlite": "event-analysis.db"
+    "sqlite": "../event-analysis.db"
   },
 
   "logger": {

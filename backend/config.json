@@ -1,9 +1,9 @@
 {
-  "app": "event-analysis",
+  "app": "event-analysis-backend",
   "host": "localhost",
-  "port": "8080",
+  "port": 8080,
   "connection": {
-    "sqlite": "event-analysis.db"
+    "sqlite": "../event-analysis.db"
   },
 
   "logger": {

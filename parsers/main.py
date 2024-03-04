@@ -1,26 +1,25 @@
-import sys
 import json
 import asyncio
-
 import logging.config
-import time
 import traceback
-from logging import Logger
-
 import aiohttp
+import time
 
 from helpers import Database
+from models.Sources import Sources
+from models.table_configurations import TableConfiguration
 from parsers import SxodimParser
 
 config: dict
-logger: Logger
+logger: logging.Logger
 session: aiohttp.ClientSession
+
 
 def timer(func):
     async def wrapper(*args, **kwargs):
         start = time.time()
         value = await func(*args, **kwargs)
-        print(f"Parser end up in: {time.time() - start}")
+        print(f"Function {func.__name__} end up in: {time.time() - start} seconds")
         return value
 
     return wrapper
@@ -28,7 +27,7 @@ def timer(func):
 
 @timer
 async def main():
-    global config, logger
+    global config, logger, session
 
     with open("config.json", 'r', encoding='utf-8') as file:
         config = json.load(file)
@@ -36,15 +35,33 @@ async def main():
     logging.config.dictConfig(config=config["logger"])
     logger = logging.getLogger(name=config["app"])
 
-    db = Database(config=config)
 
-    sxodim_parser = SxodimParser(logger=logger, db=db)
+    session = aiohttp.ClientSession(trust_env=True)
+
+    tables = TableConfiguration()
+
+    db = Database(config=config, tables=tables)
+
+    await db.insert(
+        table=tables.SOURCES.NAME,
+        columns=tables.SOURCES.COLUMNS,
+        data=[
+            [source.__dict__.get(col) for col in tables.SOURCES.COLUMNS]
+            for source in Sources().value.values()
+        ]
+    )
+
+    sxodim_parser = SxodimParser(
+        config=config,
+        logger=logger,
+        db=db,
+        session=session,
+        tables=tables
+    )
 
     try:
         logger.info(f"Parser started")
-        await asyncio.gather(
-            sxodim_parser.parse()
-        )
+        await sxodim_parser.parse()
     except Exception as err:
         logger.fatal(f"Parser failed with error {err}\nTRACEBACK: {traceback.format_exc()}")
     finally:
@@ -56,15 +73,4 @@ async def close_connections():
 
 
 if __name__ == '__main__':
-    if (
-            sys.version_info[0] == 3
-            and sys.version_info[1] >= 8
-            and sys.platform.startswith("win")
-    ):
-        policy = asyncio.WindowsSelectorEventLoopPolicy()
-        asyncio.set_event_loop_policy(policy)
-
-    loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(main())
-    loop.close()
-
+    asyncio.run(main())

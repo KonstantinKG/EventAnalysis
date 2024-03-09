@@ -123,24 +123,19 @@ class Database:
 
     @staticmethod
     def get_all_events_filter(date, city_id, category_id):
-        date_query = f"(date(start) >= date('{date}') AND date(end) <= date('{date}'))" if date else ""
+        date_query = f"date(start) >= date() AND (date(start) >= date('{date}') AND date(end) <= date('{date}'))" if date else ""
         city_query = f"city_id = '{city_id}'" if city_id else ""
         category_query = f"category_id = '{category_id}'" if category_id else ""
 
-        condition = date_query if date_query else ""
+        condition = "WHERE date(start) >= date()"
+        if date_query:
+            condition += f" AND {date_query}"
 
-        if city_query and len(condition) > 0:
+        if city_query:
             condition += f"AND {city_query}"
-        elif city_query:
-            condition += city_query
 
-        if category_query and len(condition) > 0:
+        if category_query:
             condition += f"AND {category_query}"
-        elif category_query:
-            condition += category_query
-
-        if len(condition) > 0:
-            condition = f"WHERE {condition}"
 
         return condition
 
@@ -166,7 +161,7 @@ class Database:
                     UNION ALL
                     SELECT end as date FROM events WHERE end IS NOT null
                 )
-                SELECT DISTINCT date(date) FROM dates WHERE date(date) >= now() ORDER BY date
+                SELECT DISTINCT date(date) FROM dates WHERE date(date) >= date() ORDER BY date
             """
             cursor = await connection.execute(query)
             rows = await cursor.fetchall()

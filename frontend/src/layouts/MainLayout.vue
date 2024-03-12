@@ -1,11 +1,9 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-
     <q-page-container>
       <q-toggle :model-value="isDarkMode" @update:model-value="toggleTheme" />
       <router-view />
     </q-page-container>
-
   </q-layout>
 </template>
 

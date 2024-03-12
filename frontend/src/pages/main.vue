@@ -1,75 +1,3 @@
-<template>
-  <!--  <q-page padding class="page">-->
-  <div class="page">
-    <div class="page__controls">
-      <q-btn class="page_date" icon="event" round color="deep-orange">
-        <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-date
-            v-model="date"
-            today-btn
-            mask="YYYY-MM-DD"
-            color="deep-orange"
-            :events="filtersData.dates"
-            :options="optionsFn"
-          />
-        </q-popup-proxy>
-      </q-btn>
-      <q-select
-        v-model="city"
-        class="page__select"
-        filled
-        :options="filtersData.cities"
-        option-value="id"
-        option-label="name"
-        label="Выберите город"
-        emit-value
-        map-options
-        clearable
-      />
-    </div>
-    <div class="page__cards">
-      <q-card
-        v-for="event in eventsData.events"
-        :key="event.id"
-        class="page__card"
-      >
-        <q-img
-          :src="event.photo"
-          :alt="`Картинка - ${event.title}`"
-          fit="cover"
-        >
-          <div class="absolute-bottom">
-            {{ event.category.name }}
-          </div>
-        </q-img>
-        <q-card-section>
-          {{ event.title }}
-        </q-card-section>
-        <q-card-section>
-          {{ event.description }}
-        </q-card-section>
-        <q-card-section>
-          {{ event.city.name }} {{ event.category.name }} {{ event.start }}
-          {{ event.end }}
-        </q-card-section>
-      </q-card>
-    </div>
-    <q-btn
-      v-if="eventsData.current < eventsData.pages"
-      :loading="isLoadingMore"
-      outline
-      padding="md xl"
-      class="page__btn"
-      color="deep-orange"
-      size="1.15rem"
-      @click="loadMore"
-    >
-      Показать еще
-    </q-btn>
-  </div>
-  <!--  </q-page>-->
-</template>
-
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { AllEventsData, FiltersData } from 'src/api/types'
@@ -135,16 +63,97 @@ async function getFilters() {
 
 getFilters()
 
-function optionsFn(date) {
-  return filtersData.value.dates
-}
-
-
-
 watch([city, category, date], async () => {
+  page.value = 1
   await getAllEvents()
 })
 </script>
+
+<template>
+  <!--  <q-page padding class="page">-->
+  <div class="page">
+    <div class="page__controls">
+      <q-btn class="page__date" icon="event" round color="deep-orange">
+        <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+          <q-date
+            v-model="date"
+            today-btn
+            mask="YYYY-MM-DD"
+            color="deep-orange"
+            :events="filtersData.dates"
+            :options="filtersData.dates"
+          />
+        </q-popup-proxy>
+      </q-btn>
+      <q-select
+        v-model="city"
+        class="page__select"
+        filled
+        :options="filtersData.cities"
+        option-value="id"
+        option-label="name"
+        label="Выберите город"
+        emit-value
+        map-options
+        clearable
+      />
+    </div>
+    <div class="page__cards">
+      <q-card
+        v-for="event in eventsData.events"
+        :key="event.id"
+        class="page__card"
+      >
+        <transition
+          appear
+          enter-active-class="animated fadeIn"
+          leave-active-class="animated fadeOut"
+        >
+          <div v-if="!isLoading">
+            <q-img
+              :src="event.photo"
+              :alt="`Картинка - ${event.title}`"
+              fit="cover"
+            >
+              <div class="absolute-bottom">
+                {{ event.category.name }}
+              </div>
+            </q-img>
+            <q-card-section>
+              <q-btn flat :to="{ name: 'Event', params: { id: event.id } }">
+                {{ event.title }}
+              </q-btn>
+            </q-card-section>
+            <q-card-section>
+              {{ event.description }}
+            </q-card-section>
+            <q-card-section>
+              {{ event.city.name }} {{ event.category.name }} {{ event.start }}
+              {{ event.end }}
+            </q-card-section>
+          </div>
+        </transition>
+
+        <q-inner-loading :showing="isLoading">
+          <q-spinner-gears size="50px" color="primary" />
+        </q-inner-loading>
+      </q-card>
+    </div>
+    <q-btn
+      v-if="eventsData.current < eventsData.pages"
+      :loading="isLoadingMore"
+      outline
+      padding="md xl"
+      class="page__btn"
+      color="deep-orange"
+      size="1.15rem"
+      @click="loadMore"
+    >
+      Показать еще
+    </q-btn>
+  </div>
+  <!--  </q-page>-->
+</template>
 
 <style scoped lang="scss">
 .page {
@@ -159,19 +168,25 @@ watch([city, category, date], async () => {
     align-content: center;
   }
 
+  &__date {
+    flex-basis: 56px;
+  }
+
   &__select {
     flex-basis: 300px;
   }
 
   &__cards {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(300px, 1fr));
+    //display: grid;
+    //grid-template-columns: repeat(4, minmax(300px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
   }
 
   &__card {
-    //flex: 0 1 25%;
+    flex: 0 1 25%;
   }
 
   &__btn {

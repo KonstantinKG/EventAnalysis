@@ -4,14 +4,15 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('pages/main.vue'),
-    // children: [{ path: '', component: () => import('pages/main.vue') }],
   },
-
-  // Always leave this as last one,
-  // but you can also remove it
+  {
+    path: '/event/:id',
+    name: 'Event',
+    component: () => import('pages/event.vue'),
+  },
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('pages/error-page.vue'),
   },
 ]
 

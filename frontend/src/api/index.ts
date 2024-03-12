@@ -10,7 +10,6 @@ import type {
   PrisesData,
 } from './types'
 
-
 type PromiseResponse<T> = Promise<{ data: T }>
 
 class EventAnalysisService {
@@ -20,7 +19,7 @@ class EventAnalysisService {
     return await api.get('/all', { params }).then(this.getData)
   }
 
-  async getById(id: number): PromiseResponse<EventData> {
+  async getById(id: string): PromiseResponse<EventData> {
     return await api.get('/get', { params: { id } }).then(this.getData)
   }
 
@@ -29,7 +28,9 @@ class EventAnalysisService {
   }
 
   async getEventPrices(event_id: number): PromiseResponse<PrisesDatesData> {
-    return await api.get('/get/prices/dates', { params: { event_id } }).then(this.getData)
+    return await api
+      .get('/get/prices/dates', { params: { event_id } })
+      .then(this.getData)
   }
 
   async getPrices(params: GetPrisesParams): PromiseResponse<PrisesData> {

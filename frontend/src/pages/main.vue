@@ -6,7 +6,7 @@ import EventAnalysisService from 'src/api'
 const eventsData = ref<AllEventsData>({
   current: 1,
   pages: 1,
-  events: [],
+  events: []
 })
 const page = ref(1)
 const date = ref<string>()
@@ -22,7 +22,7 @@ async function getAllEvents(loadMore = false) {
       page: page.value,
       category_id: category.value,
       city_id: city.value,
-      date: date.value,
+      date: date.value
     })
     if (data.current > 1) {
       eventsData.value.current = data.current
@@ -49,7 +49,7 @@ async function loadMore() {
 const filtersData = ref<FiltersData>({
   categories: [],
   cities: [],
-  dates: [],
+  dates: []
 })
 
 async function getFilters() {
@@ -70,7 +70,6 @@ watch([city, category, date], async () => {
 </script>
 
 <template>
-  <!--  <q-page padding class="page">-->
   <div class="page">
     <div class="page__controls">
       <q-btn class="page__date" icon="event" round color="deep-orange">
@@ -98,47 +97,32 @@ watch([city, category, date], async () => {
         clearable
       />
     </div>
-    <div class="page__cards">
-      <q-card
-        v-for="event in eventsData.events"
-        :key="event.id"
-        class="page__card"
-      >
-        <transition
-          appear
-          enter-active-class="animated fadeIn"
-          leave-active-class="animated fadeOut"
-        >
-          <div v-if="!isLoading">
-            <q-img
-              :src="event.photo"
-              :alt="`Картинка - ${event.title}`"
-              fit="cover"
-            >
-              <div class="absolute-bottom">
-                {{ event.category.name }}
-              </div>
-            </q-img>
-            <q-card-section>
-              <q-btn flat :to="{ name: 'Event', params: { id: event.id } }">
-                {{ event.title }}
-              </q-btn>
-            </q-card-section>
-            <q-card-section>
-              {{ event.description }}
-            </q-card-section>
-            <q-card-section>
-              {{ event.city.name }} {{ event.category.name }} {{ event.start }}
-              {{ event.end }}
-            </q-card-section>
-          </div>
-        </transition>
-
-        <q-inner-loading :showing="isLoading">
-          <q-spinner-gears size="50px" color="primary" />
-        </q-inner-loading>
-      </q-card>
-    </div>
+    <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+      <div v-show="!isLoading" class="page__cards">
+        <q-card v-for="event in eventsData.events" :key="event.id" class="page__card">
+          <q-img :src="event.photo" :alt="`Картинка - ${event.title}`" fit="cover">
+            <div class="absolute-bottom">
+              {{ event.category.name }}
+            </div>
+          </q-img>
+          <q-card-section>
+            <q-btn flat :to="{ name: 'Event', params: { id: event.id } }">
+              {{ event.title }}
+            </q-btn>
+          </q-card-section>
+          <q-card-section>
+            {{ event.description }}
+          </q-card-section>
+          <q-card-section>
+            {{ event.city.name }} {{ event.category.name }} {{ event.start }}
+            {{ event.end }}
+          </q-card-section>
+        </q-card>
+      </div>
+    </transition>
+    <q-inner-loading :showing="isLoading">
+      <q-spinner-gears size="50px" color="primary" />
+    </q-inner-loading>
     <q-btn
       v-if="eventsData.current < eventsData.pages"
       :loading="isLoadingMore"
@@ -152,7 +136,6 @@ watch([city, category, date], async () => {
       Показать еще
     </q-btn>
   </div>
-  <!--  </q-page>-->
 </template>
 
 <style scoped lang="scss">

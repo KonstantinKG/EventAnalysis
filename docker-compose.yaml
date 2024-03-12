@@ -7,4 +7,4 @@ services:
       - 8198:8198
     restart: on-failure
     volumes:
-      - C:/Users/konst/Desktop/HW/EventAnalysis/event-analysis.db:/event-analysis.db
+      - ./event-analysis.db:/event-analysis.db

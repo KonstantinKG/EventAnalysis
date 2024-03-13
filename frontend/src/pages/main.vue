@@ -100,7 +100,7 @@ watch([city, category, date], async () => {
     <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
       <div v-show="!isLoading" class="page__cards">
         <q-card v-for="event in eventsData.events" :key="event.id" class="page__card">
-          <q-img :src="event.photo" :alt="`Картинка - ${event.title}`" fit="cover">
+          <q-img :src="`files/${event.photo.split(/[\\/]/).pop()}`" :alt="`Картинка - ${event.title}`" fit="cover">
             <div class="absolute-bottom">
               {{ event.category.name }}
             </div>

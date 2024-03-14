@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { AllEventsData, FiltersData } from 'src/api/types'
+import type { AllEventsData, FiltersData } from 'src/api/types'
 import EventAnalysisService from 'src/api'
+import EventsControls from 'components/EventsControls.vue'
 
 const eventsData = ref<AllEventsData>({
   current: 1,
   pages: 1,
   events: []
+})
+const filtersData = ref<FiltersData>({
+  categories: [],
+  cities: [],
+  dates: []
 })
 const page = ref(1)
 const date = ref<string>()
@@ -14,6 +20,23 @@ const city = ref<string>()
 const category = ref<string>()
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
+
+function onSelectCategory(id: string) {
+  if (category.value && category.value === id) {
+    category.value = undefined
+  } else {
+    category.value = id
+  }
+}
+
+async function getFilters() {
+  try {
+    const { data } = await EventAnalysisService.getFilters()
+    filtersData.value = data
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 async function getAllEvents(loadMore = false) {
   try {
@@ -37,8 +60,6 @@ async function getAllEvents(loadMore = false) {
   }
 }
 
-getAllEvents()
-
 async function loadMore() {
   isLoadingMore.value = true
   page.value++
@@ -46,122 +67,99 @@ async function loadMore() {
   isLoadingMore.value = false
 }
 
-const filtersData = ref<FiltersData>({
-  categories: [],
-  cities: [],
-  dates: []
-})
-
-async function getFilters() {
-  try {
-    const { data } = await EventAnalysisService.getFilters()
-    filtersData.value = data
-  } catch (e) {
-    console.error(e)
-  }
-}
-
-getFilters()
-
 watch([city, category, date], async () => {
   page.value = 1
   await getAllEvents()
 })
+
+getAllEvents()
+getFilters()
 </script>
 
 <template>
-  <div class="page">
-    <div class="page__controls">
-      <q-btn class="page__date" icon="event" round color="deep-orange">
-        <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-date
-            v-model="date"
-            today-btn
-            mask="YYYY-MM-DD"
-            color="deep-orange"
-            :events="filtersData.dates"
-            :options="filtersData.dates"
-          />
-        </q-popup-proxy>
-      </q-btn>
-      <q-select
-        v-model="city"
-        class="page__select"
-        filled
-        :options="filtersData.cities"
-        option-value="id"
-        option-label="name"
-        label="Выберите город"
-        emit-value
-        map-options
-        clearable
-      />
-    </div>
-    <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-      <div v-show="!isLoading" class="page__cards">
-        <q-card v-for="event in eventsData.events" :key="event.id" class="page__card">
-          <q-img :src="`files/${event.photo.split(/[\\/]/).pop()}`" :alt="`Картинка - ${event.title}`" fit="cover">
-            <div class="absolute-bottom">
-              {{ event.category.name }}
-            </div>
-          </q-img>
-          <q-card-section>
-            <q-btn flat :to="{ name: 'Event', params: { id: event.id } }">
-              {{ event.title }}
-            </q-btn>
-          </q-card-section>
-          <q-card-section>
-            {{ event.description }}
-          </q-card-section>
-          <q-card-section>
-            {{ event.city.name }} {{ event.category.name }} {{ event.start }}
-            {{ event.end }}
-          </q-card-section>
-        </q-card>
+  <div class="container">
+    <div class="page">
+      <div class="page__controls">
+        <events-controls
+          v-model:date="date"
+          v-model:city="city"
+          v-model:category="category"
+          :data="filtersData"
+        />
       </div>
-    </transition>
-    <q-inner-loading :showing="isLoading">
-      <q-spinner-gears size="50px" color="primary" />
-    </q-inner-loading>
-    <q-btn
-      v-if="eventsData.current < eventsData.pages"
-      :loading="isLoadingMore"
-      outline
-      padding="md xl"
-      class="page__btn"
-      color="deep-orange"
-      size="1.15rem"
-      @click="loadMore"
-    >
-      Показать еще
-    </q-btn>
+      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+        <div v-show="!isLoading" class="page__cards">
+          <q-card v-for="event in eventsData.events" :key="event.id" class="page__card">
+            <q-img
+              class="page__img"
+              :src="`files/${event.photo.split(/[\\/]/).pop()}`"
+              :alt="`Картинка - ${event.title}`"
+              fit="cover"
+            >
+              <div class="absolute-bottom">
+                <span class="cursor-pointer" @click="onSelectCategory(event.category.id)">
+                  {{ event.category.name }}
+                </span>
+              </div>
+            </q-img>
+            <q-card-section horizontal>
+              <q-btn flat :to="{ name: 'Event', params: { id: event.id } }">
+                {{ event.title }}
+              </q-btn>
+            </q-card-section>
+            <!--            <q-card-section>-->
+            <!--              {{ event.description }}-->
+            <!--            </q-card-section>-->
+            <q-card-section>
+              {{ event.city.name }} {{ event.category.name }} {{ event.start }}
+              {{ event.end }}
+            </q-card-section>
+          </q-card>
+          <h5 v-if="!eventsData.events.length && !isLoading">Не найдено мероприятий</h5>
+        </div>
+      </transition>
+      <q-inner-loading :showing="isLoading">
+        <q-spinner-hourglass size="xl" color="primary" />
+      </q-inner-loading>
+      <q-btn
+        v-if="eventsData.current < eventsData.pages && !isLoading"
+        :loading="isLoadingMore"
+        outline
+        padding="sm xl"
+        class="page__btn"
+        color="deep-orange"
+        @click="loadMore"
+      >
+        Показать еще
+      </q-btn>
+    </div>
   </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss">
+.container {
+  max-width: $breakpoint-md;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 .page {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px;
 
   &__controls {
     display: flex;
     gap: 20px;
-    align-content: center;
-  }
-
-  &__date {
-    flex-basis: 56px;
+    align-items: center;
+    justify-content: center;
   }
 
   &__select {
-    flex-basis: 300px;
+    flex-basis: 350px;
   }
 
   &__cards {
-    //display: grid;
-    //grid-template-columns: repeat(4, minmax(300px, 1fr));
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -169,7 +167,12 @@ watch([city, category, date], async () => {
   }
 
   &__card {
-    flex: 0 1 25%;
+    flex-shrink: 1;
+    max-width: 250px;
+  }
+
+  &__img {
+    min-height: 150px;
   }
 
   &__btn {

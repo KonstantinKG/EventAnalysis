@@ -6,30 +6,24 @@ export interface GetAllEventsParams {
 }
 
 export interface GetPrisesParams {
-  event_id: number
+  event_id: string
   date: string
 }
 
-interface LocationData {
-  id: string
-  name: string
-}
+type Item = { id: string; name: string }
 
-interface CategoryData {
-  id: string
-  name: string
-}
-
-interface CityData {
-  id: string
-  name: string
-}
+type LocationData = Item
+type CategoryData = Item
+type CityData = Item
 
 export interface EventData {
-  id: number
+  id: string
   title: string
   photo: string
   description: string
+  short_description: string
+  phone: string
+  link: string
   start: string
   end: string
   url: string
@@ -38,10 +32,11 @@ export interface EventData {
   city: CityData
 }
 
+//TODO: total
 export interface AllEventsData {
   current: number
   pages: number
-  events: Omit<EventData, 'location'>[]
+  events: Omit<EventData, 'location' | 'short_description' | 'phone' | 'link'>[]
 }
 
 export interface FiltersData {
@@ -50,18 +45,12 @@ export interface FiltersData {
   dates: string[]
 }
 
-export interface PrisesDatesData {}
-
-interface additionalPropData {
+interface EntryTicket {
   id: number
   date: string
-  prise: number
+  price: number
   seat: string
   available: boolean
 }
 
-export interface PrisesData {
-  additionalProp1: additionalPropData[]
-  additionalProp2: additionalPropData[]
-  additionalProp3: additionalPropData[]
-}
+export type PricesData = Record<string, EntryTicket[] | never>

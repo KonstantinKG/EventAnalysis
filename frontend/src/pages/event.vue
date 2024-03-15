@@ -69,7 +69,7 @@ getEvent()
 
 <template>
   <div class="container">
-    <q-btn icon="arrow_back" @click="router.back()">Назад</q-btn>
+    <q-btn class="q-mb-sm" icon="arrow_back" unelevated no-caps @click="router.back()">Назад</q-btn>
     <div class="event">
       <q-img :src="`files/${event.photo.split(/[\\/]/).pop()}`">
         <div class="image-content absolute-bottom">
@@ -93,22 +93,25 @@ getEvent()
         <q-spinner size="xl" color="primary" />
       </div>
       <template v-else-if="Object.keys(prices).length">
-        <q-tabs v-model="tab" class="text-deep-orange">
+        <q-tabs v-model="tab" class="text-deep-orange shadow-1">
           <q-tab name="all" label="Все" />
           <q-tab name="free" label="Свободные" />
           <q-tab name="busy" label="Заняты" />
         </q-tabs>
-        <div v-for="(date, index) in Object.keys(prices)" :key="index" class="row">
-          <q-chip>{{ date }}</q-chip>
+        <!--        <q-tab-panels v-model="tab" animated swipeable keep-alive>-->
+        <!--          <q-tab-panel name="all">all</q-tab-panel>-->
+        <!--          <q-tab-panel name="free">free</q-tab-panel>-->
+        <!--          <q-tab-panel name="busy">busy</q-tab-panel>-->
+        <!--        </q-tab-panels>-->
+        <div v-for="(date, index) in Object.keys(prices)" :key="index" class="event__tickets">
           <div
             v-for="item in prices[date]"
             :key="item.id"
-            class="chips"
-            style="margin-bottom: 40px"
+            class="event__chips"
           >
             <q-chip color="deep-orange">Дата - {{ item.date }}</q-chip>
-            <q-chip color="deep-orange">Цена - {{ item.price }}</q-chip>
-            <q-chip :color="item.available ? 'deep-orange' : 'grey'">
+            <q-chip v-if="item.price" color="deep-orange">Цена - {{ item.price }}</q-chip>
+            <q-chip v-if="item.seat" :color="item.available ? 'deep-orange' : 'grey'">
               Место - {{ item.seat }}
             </q-chip>
           </div>
@@ -125,10 +128,25 @@ getEvent()
   padding: 20px;
 }
 
+.q-tab {
+  flex-grow: 1;
+}
+
 .event {
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  .image-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: fit-content;
+
+    h4 {
+      margin: 0;
+    }
+  }
 
   &__content {
     display: flex;
@@ -145,22 +163,19 @@ getEvent()
   &__card {
     flex: 0 0 200px;
   }
-}
 
-.image-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: fit-content;
-
-  h4 {
-    margin: 0;
+  &__tickets {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
   }
-}
 
-.chips {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  &__chips {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
 }
 </style>

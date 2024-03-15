@@ -103,13 +103,10 @@ getFilters()
               </div>
             </q-img>
             <q-card-section horizontal>
-              <q-btn flat :to="{ name: 'Event', params: { id: event.id } }">
+              <q-btn no-caps flat :to="{ name: 'Event', params: { id: event.id } }">
                 {{ event.title }}
               </q-btn>
             </q-card-section>
-            <!--            <q-card-section>-->
-            <!--              {{ event.description }}-->
-            <!--            </q-card-section>-->
             <q-card-section>
               {{ event.city.name }} {{ event.category.name }} {{ event.start }}
               {{ event.end }}

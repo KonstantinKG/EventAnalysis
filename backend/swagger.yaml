@@ -62,6 +62,34 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/PaginatedEventList'
+
+  /search:
+    get:
+      summary: Get a paginated list of events
+      parameters:
+        - name: title
+          in: query
+          description: Event title
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: page
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PaginatedEventList'
+
   /get/filters:
     get:
       summary: Get filters for events
@@ -95,6 +123,35 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/AvailableDates'
+
+  /get/sectors:
+    get:
+      summary: Get event prices sectors
+      parameters:
+        - name: event_id
+          in: query
+          description: Event ID
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: Date for event prices
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+
   /get/prices:
     get:
       summary: Get event prices
@@ -112,6 +169,12 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: sector
+          in: query
+          description: Sector
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Successful response
@@ -163,6 +226,8 @@ components:
         current:
           type: integer
         pages:
+          type: integer
+        total:
           type: integer
         events:
           type: array

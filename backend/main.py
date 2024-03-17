@@ -37,6 +37,11 @@ async def all(request):
     return web.json_response(response)
 
 
+async def search_events(request):
+    response = await event_analysis_controller.search_events(request=request)
+    return web.json_response(response)
+
+
 async def get_filters(request):
     response = await event_analysis_controller.get_filters(request=request)
     return web.json_response(response)
@@ -52,14 +57,20 @@ async def get_prices(request):
     return web.json_response(response)
 
 
+async def get_sectors(request):
+    response = await event_analysis_controller.get_sectors(request=request)
+    return web.json_response(response)
+
+
 app.router.add_get('/get', get)
 app.router.add_get('/all', all)
+app.router.add_get('/search', search_events)
 app.router.add_get('/get/filters', get_filters)
 app.router.add_get('/get/prices/dates', get_prices_dates)
+app.router.add_get('/get/sectors', get_sectors)
 app.router.add_get('/get/prices', get_prices)
 
 setup_swagger(app, swagger_url="/api/documentation", swagger_from_file="swagger.yaml", ui_version=3)
-
 
 cors = aiohttp_cors.setup(
     app=app,

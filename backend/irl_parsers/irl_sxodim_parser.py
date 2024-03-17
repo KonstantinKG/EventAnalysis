@@ -66,20 +66,21 @@ class IrlSxodimParser:
                             event_id=event.id,
                             date=self.parse_date(f"{available_date} {timeslot['time']}"),
                             price=rate["price"],
-                            seat="",
+                            seat='',
+                            sector='',
                             available=None
                         )
                         upload.append(price)
 
                 else:
                     for seat in hall["seats"]:
-                        seat_name = f"{seat['row']} ряд, {seat['column']} место" if not seat["name"] else seat['name']
                         price = EventPrice(
                             id=str(uuid.uuid4()),
                             event_id=event.id,
                             date=self.parse_date(f"{available_date} {timeslot['time']}"),
                             price=seat["seatPrice"]["rate"]["price"] if seat["seatPrice"] else None,
-                            seat=f"{seat['sector_name']}, {seat_name}",
+                            sector=f"{seat['sector_name']}",
+                            seat=f"{seat['row']} ряд {seat['column']} место",
                             available=seat["available"]
                         )
                         upload.append(price)

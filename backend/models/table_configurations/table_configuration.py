@@ -48,6 +48,6 @@ class TableConfiguration:
 
         self.EVENTS_PRICES = DbTable(
             table="events_prices",
-            columns=["id", "event_id", "date", "price", "seat", "available"],
-            on_conflict=f"on conflict (event_id, date, price, seat) do update set available = EXCLUDED.available"
+            columns=["id", "event_id", "date", "price", "seat", "sector", "available"],
+            on_conflict=f"on conflict (event_id, date, price, seat, sector) do update set available = EXCLUDED.available"
         )

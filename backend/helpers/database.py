@@ -89,7 +89,21 @@ class Database:
             rows = await cursor.fetchall()
         return rows
 
-    async def get_event_prices(self, id, date) -> list:
+    async def get_event_sectors(self, id, date) -> list:
+        async with aiosqlite.connect(self._config['connection']['sqlite']) as connection:
+            query = f"""
+                SELECT DISTINCT sector FROM events_prices e
+                WHERE e.event_id = '{id}' AND date(e.date) = date('{date}')
+                ORDER BY price 
+            """
+
+            cursor = await connection.execute(query)
+            rows = await cursor.fetchall()
+        return rows
+
+    async def get_event_prices(self, id, date, sector: str = None) -> list:
+        condition = f"WHERE e.event_id = '{id}' AND date(e.date) = date('{date}')"
+        condition = condition if not sector else f"{condition} AND sector = '{sector}'"
         async with aiosqlite.connect(self._config['connection']['sqlite']) as connection:
             query = f"""
                 SELECT
@@ -97,10 +111,11 @@ class Database:
                     datetime(date),
                     price,
                     seat,
-                    available
+                    available,
+                    sector
                 FROM events_prices e
-                WHERE e.event_id = '{id}' AND date(e.date) = date('{date}')
-                ORDER BY date, available DESC 
+                {condition}
+                ORDER BY available DESC, price
             """
 
             cursor = await connection.execute(query)
@@ -166,6 +181,40 @@ class Database:
             cursor = await connection.execute(query)
             rows = await cursor.fetchall()
         return [row[0] for row in rows]
+
+    async def search_event(self, query: str, offset: int, limit: int) -> list:
+        async with aiosqlite.connect(self._config['connection']['sqlite']) as connection:
+            query = f'''
+                SELECT
+                    e.id,
+                    title,
+                    photo,
+                    short_description,
+                    datetime(start),
+                    datetime(end),
+                    url,
+                    ct.id,
+                    ct.name,
+                    ci.id,
+                    ci.name
+                FROM events e
+                INNER JOIN locations l ON location_id = l.id
+                INNER JOIN categories ct ON category_id = ct.id
+                INNER JOIN cities ci ON city_id = ci.id
+                WHERE e.title LIKE '%{query}%'
+                LIMIT {limit}
+                OFFSET {offset}
+            '''
+            cursor = await connection.execute(query)
+            rows = await cursor.fetchall()
+        return rows
+
+    async def get_search_event_count(self, query: str) -> int:
+        async with aiosqlite.connect(self._config['connection']['sqlite']) as connection:
+            query = f'''SELECT count(*) FROM events e WHERE e.title LIKE '%{query}%';'''
+            cursor = await connection.execute(query)
+            rows = await cursor.fetchall()
+        return int(rows[0][0])
 
     async def get_as_dict(self, key: str, value: str, table: str):
         async with aiosqlite.connect(self._config['connection']['sqlite']) as connection:

@@ -47,6 +47,7 @@ class EventAnalysisController:
                 "start": event[6],
                 "end": event[7],
                 "url": event[8],
+                "ticker_url": event[16],
                 "location": {
                     "id": event[9],
                     "name": event[10]
@@ -198,16 +199,23 @@ class EventAnalysisController:
 
             prices = await self._db.get_event_prices(id=event_id, date=available_date, sector=sector)
 
-            return self.response(data=[
-                {
+            data = {}
+            for price in prices:
+                row = price[3] if sector else 'rates'
+                if not row in data:
+                    data[row] = []
+
+                data[row].append({
                     "id": price[0],
                     "date": price[1],
                     "price": price[2],
-                    "seat": price[3],
-                    "available": price[4],
-                    "sector": price[5]
-                } for price in prices
-            ])
+                    "row": price[3],
+                    "column": price[4],
+                    "available": price[5],
+                    "sector": price[6]
+                })
+
+            return self.response(data=data)
 
         except Exception as e:
             self._logger.error(f"{e} {traceback.format_exc()}")
@@ -215,6 +223,7 @@ class EventAnalysisController:
 
     async def get_filters(self, request: Request) -> dict:
         try:
+
             cities = await self._db.get_cities()
             categories = await self._db.get_categories()
             dates = await self._db.get_dates()

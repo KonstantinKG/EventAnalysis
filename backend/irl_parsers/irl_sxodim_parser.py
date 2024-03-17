@@ -66,7 +66,8 @@ class IrlSxodimParser:
                             event_id=event.id,
                             date=self.parse_date(f"{available_date} {timeslot['time']}"),
                             price=rate["price"],
-                            seat='',
+                            row=0,
+                            column=0,
                             sector='',
                             available=None
                         )
@@ -80,7 +81,8 @@ class IrlSxodimParser:
                             date=self.parse_date(f"{available_date} {timeslot['time']}"),
                             price=seat["seatPrice"]["rate"]["price"] if seat["seatPrice"] else None,
                             sector=f"{seat['sector_name']}",
-                            seat=f"{seat['row']} ряд {seat['column']} место",
+                            row=seat['row'],
+                            column=seat['column'],
                             available=seat["available"]
                         )
                         upload.append(price)
@@ -92,7 +94,9 @@ class IrlSxodimParser:
                     event_id=event.id,
                     date=self.parse_date(available_date),
                     price=rate["price"],
-                    seat="",
+                    row=0,
+                    column=0,
+                    sector='',
                     available=None
                 )
                 upload.append(price)

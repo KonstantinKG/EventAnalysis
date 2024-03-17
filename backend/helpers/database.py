@@ -110,12 +110,13 @@ class Database:
                     e.id,
                     datetime(date),
                     price,
-                    seat,
+                    row,
+                    column,
                     available,
                     sector
                 FROM events_prices e
                 {condition}
-                ORDER BY available DESC, price
+                ORDER BY row, column
             """
 
             cursor = await connection.execute(query)
@@ -163,7 +164,12 @@ class Database:
 
     async def get_categories(self):
         async with aiosqlite.connect(self._config['connection']['sqlite']) as connection:
-            query = "SELECT id, name FROM categories"
+            query = '''
+                SELECT DISTINCT category_id, c.name, count(*) priority FROM events
+                INNER JOIN categories c on c.id = category_id            
+                GROUP BY category_id
+                ORDER BY priority DESC;
+            '''
             cursor = await connection.execute(query)
             rows = await cursor.fetchall()
         return [{"id": row[0], "name": row[1]} for row in rows]

@@ -5,6 +5,7 @@ import EventAnalysisService from 'src/api'
 import EventsControls from 'components/EventsControls.vue'
 
 const eventsData = ref<AllEventsData>({
+  total: 0,
   current: 1,
   pages: 1,
   events: []
@@ -18,6 +19,7 @@ const page = ref(1)
 const date = ref<string>()
 const city = ref<string>()
 const category = ref<string>()
+const search = ref('')
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
 
@@ -67,6 +69,28 @@ async function loadMore() {
   isLoadingMore.value = false
 }
 
+async function onSearch() {
+  try {
+    const { data } = await EventAnalysisService.search({
+      title: search.value,
+      page: page.value
+    })
+    if (data.current > 1) {
+      eventsData.value.current = data.current
+      eventsData.value.events = eventsData.value.events.concat(data.events)
+    } else {
+      eventsData.value = data
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+watch(search, async () => {
+  page.value = 1
+  await onSearch()
+})
+
 watch([city, category, date], async () => {
   page.value = 1
   await getAllEvents()
@@ -84,6 +108,7 @@ getFilters()
           v-model:date="date"
           v-model:city="city"
           v-model:category="category"
+          v-model:search="search"
           :data="filtersData"
         />
       </div>
@@ -92,7 +117,7 @@ getFilters()
           <q-card v-for="event in eventsData.events" :key="event.id" class="page__card">
             <q-img
               class="page__img"
-              :src="`files/${event.photo.split(/[\\/]/).pop()}`"
+              :src="`C:\\My Projects\\EventAnalysis\\files\\${event.photo.split(/[\\/]/).pop()}`"
               :alt="`Картинка - ${event.title}`"
               fit="cover"
             >

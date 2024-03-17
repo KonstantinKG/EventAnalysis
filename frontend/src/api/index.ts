@@ -1,12 +1,12 @@
 import { api } from 'boot/axios'
 import { AxiosResponse } from 'axios'
-import type {
+import {
   GetAllEventsParams,
   GetPrisesParams,
   AllEventsData,
   EventData,
   FiltersData,
-  PricesData
+  PricesData, SearchParams
 } from './types'
 
 type PromiseResponse<T> = Promise<{ data: T }>
@@ -16,6 +16,10 @@ class EventAnalysisService {
 
   async getAll(params: GetAllEventsParams): PromiseResponse<AllEventsData> {
     return await api.get('/all', { params }).then(this.getData)
+  }
+
+  async search(params: SearchParams): PromiseResponse<AllEventsData> {
+    return await api.get('/search', { params }).then(this.getData)
   }
 
   async getById(id: string): PromiseResponse<EventData> {

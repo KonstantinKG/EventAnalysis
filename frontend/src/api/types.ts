@@ -10,6 +10,11 @@ export interface GetPrisesParams {
   date: string
 }
 
+export interface SearchParams {
+  title: string
+  page: number
+}
+
 type Item = { id: string; name: string }
 
 type LocationData = Item
@@ -27,6 +32,7 @@ export interface EventData {
   start: string
   end: string
   url: string
+  ticker_url: string
   location: LocationData
   category: CategoryData
   city: CityData
@@ -34,9 +40,10 @@ export interface EventData {
 
 //TODO: total
 export interface AllEventsData {
+  total: number
   current: number
   pages: number
-  events: Omit<EventData, 'location' | 'short_description' | 'phone' | 'link'>[]
+  events: Omit<EventData, 'location' | 'short_description' | 'phone' | 'link' | 'ticker_url'>[]
 }
 
 export interface FiltersData {

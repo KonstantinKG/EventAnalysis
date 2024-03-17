@@ -8,6 +8,7 @@ defineProps<{ data: FiltersData }>()
 const city = defineModel<string | undefined>('city', { required: true })
 const date = defineModel<string | undefined>('date', { required: true })
 const category = defineModel<string | undefined>('category', { required: true })
+const search = defineModel<string | undefined>('search', { required: true })
 
 const $q = useQuasar()
 const isDarkMode = ref($q.dark.isActive)
@@ -81,6 +82,7 @@ function toggleTheme(value: boolean) {
       </q-item>
     </template>
   </q-select>
+  <q-input   v-model="search" class="page__select" label="Искать по названию" filled />
   <q-toggle
     size="lg"
     color="blue"

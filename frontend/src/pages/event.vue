@@ -71,7 +71,7 @@ getEvent()
   <div class="container">
     <q-btn class="q-mb-sm" icon="arrow_back" unelevated no-caps @click="router.back()">Назад</q-btn>
     <div class="event">
-      <q-img :src="`files/${event.photo.split(/[\\/]/).pop()}`">
+      <q-img :src="`C:\\My Projects\\EventAnalysis\\files\\${event.photo.split(/[\\/]/).pop()}`">
         <div class="image-content absolute-bottom">
           <div>{{ event.category.name }}</div>
           <h4>{{ event.title }}</h4>

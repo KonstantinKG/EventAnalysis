@@ -3,12 +3,16 @@ import { RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('pages/main.vue')
-  },
-  {
-    path: '/event/:id',
-    name: 'Event',
-    component: () => import('pages/event.vue')
+    component: () => import('layouts/default.vue'),
+    redirect: '/events',
+    children: [
+      { path: '/events', component: () => import('pages/main.vue') },
+      {
+        path: '/events/:id',
+        name: 'Event',
+        component: () => import('pages/event.vue')
+      }
+    ]
   },
   {
     path: '/:catchAll(.*)*',

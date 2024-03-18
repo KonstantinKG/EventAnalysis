@@ -6,7 +6,9 @@ import {
   AllEventsData,
   EventData,
   FiltersData,
-  PricesData, SearchParams
+  PricesData,
+  SearchParams,
+  SectorsParams
 } from './types'
 
 type PromiseResponse<T> = Promise<{ data: T }>
@@ -30,11 +32,15 @@ class EventAnalysisService {
     return await api.get('/get/filters').then(this.getData)
   }
 
-  async getEventPrices(event_id: string): PromiseResponse<string[]> {
+  async getEventDatesPrices(event_id: string): PromiseResponse<string[]> {
     return await api.get('/get/prices/dates', { params: { event_id } }).then(this.getData)
   }
 
-  async getPrices(params: GetPrisesParams): PromiseResponse<PricesData> {
+  async getEventSectors(params: SectorsParams): PromiseResponse<string[]> {
+    return await api.get('/get/sectors', { params }).then(this.getData)
+  }
+
+  async getEventPrices(params: GetPrisesParams): PromiseResponse<PricesData> {
     return await api.get('/get/prices', { params }).then(this.getData)
   }
 }

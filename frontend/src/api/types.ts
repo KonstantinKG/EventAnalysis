@@ -8,11 +8,17 @@ export interface GetAllEventsParams {
 export interface GetPrisesParams {
   event_id: string
   date: string
+  sector?: string
 }
 
 export interface SearchParams {
   title: string
   page: number
+}
+
+export interface SectorsParams {
+  event_id: string
+  date: string
 }
 
 type Item = { id: string; name: string }
@@ -38,7 +44,6 @@ export interface EventData {
   city: CityData
 }
 
-//TODO: total
 export interface AllEventsData {
   total: number
   current: number

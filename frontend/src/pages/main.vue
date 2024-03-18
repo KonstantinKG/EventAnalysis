@@ -3,6 +3,8 @@ import { ref, watch } from 'vue'
 import type { AllEventsData, FiltersData } from 'src/api/types'
 import EventAnalysisService from 'src/api'
 import EventsControls from 'components/EventsControls.vue'
+import { formatDate } from 'src/helpers/formatDate'
+import { useQuasar } from 'quasar'
 
 const eventsData = ref<AllEventsData>({
   total: 0,
@@ -19,9 +21,16 @@ const page = ref(1)
 const date = ref<string>()
 const city = ref<string>()
 const category = ref<string>()
-const search = ref('')
 const isLoading = ref(false)
 const isLoadingMore = ref(false)
+
+const $q = useQuasar()
+const isDarkMode = ref($q.dark.isActive)
+
+function toggleTheme(value: boolean) {
+  isDarkMode.value = value
+  $q.dark.set(value)
+}
 
 function onSelectCategory(id: string) {
   if (category.value && category.value === id) {
@@ -34,7 +43,11 @@ function onSelectCategory(id: string) {
 async function getFilters() {
   try {
     const { data } = await EventAnalysisService.getFilters()
-    filtersData.value = data
+    filtersData.value.categories = data.categories
+    filtersData.value.cities = data.cities
+    filtersData.value.dates = data.dates.map((el) => {
+      return el.split('-').join('/')
+    })
   } catch (e) {
     console.error(e)
   }
@@ -69,10 +82,11 @@ async function loadMore() {
   isLoadingMore.value = false
 }
 
-async function onSearch() {
+async function onSearch(value: string) {
   try {
+    isLoading.value = true
     const { data } = await EventAnalysisService.search({
-      title: search.value,
+      title: value,
       page: page.value
     })
     if (data.current > 1) {
@@ -83,13 +97,10 @@ async function onSearch() {
     }
   } catch (e) {
     console.error(e)
+  } finally {
+    isLoading.value = false
   }
 }
-
-watch(search, async () => {
-  page.value = 1
-  await onSearch()
-})
 
 watch([city, category, date], async () => {
   page.value = 1
@@ -101,23 +112,51 @@ getFilters()
 </script>
 
 <template>
-  <div class="container">
-    <div class="page">
-      <div class="page__controls">
-        <events-controls
-          v-model:date="date"
-          v-model:city="city"
-          v-model:category="category"
-          v-model:search="search"
-          :data="filtersData"
-        />
+  <q-page>
+    <div class="events">
+      <events-controls
+        v-model:city="city"
+        v-model:category="category"
+        :data="filtersData"
+        @search="onSearch"
+        @clear="getAllEvents"
+      />
+      <div class="row items-center justify-between">
+        <div class="title">Всего найдено мероприятий: {{ eventsData.total }}</div>
+        <div>
+          <q-toggle
+            class="dark-mode"
+            size="lg"
+            color="blue"
+            checked-icon="dark_mode"
+            unchecked-icon="light_mode"
+            :model-value="isDarkMode"
+            @update:model-value="toggleTheme"
+          />
+          <q-btn
+            class="events__date"
+            icon="event"
+            round
+            :color="$q.dark.isActive ? 'grey-9' : 'grey-13'"
+          >
+            <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+              <q-date
+                v-model="date"
+                today-btn
+                mask="YYYY-MM-DD"
+                color="deep-orange"
+                :options="filtersData.dates"
+              />
+            </q-popup-proxy>
+          </q-btn>
+        </div>
       </div>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <div v-show="!isLoading" class="page__cards">
-          <q-card v-for="event in eventsData.events" :key="event.id" class="page__card">
+        <div v-if="!isLoading" class="events__cards">
+          <q-card v-for="event in eventsData.events" :key="event.id" class="events__card">
             <q-img
-              class="page__img"
-              :src="`C:\\My Projects\\EventAnalysis\\files\\${event.photo.split(/[\\/]/).pop()}`"
+              class="events__img"
+              :src="`files/${event.photo.split(/[\\/]/).pop()}`"
               :alt="`Картинка - ${event.title}`"
               fit="cover"
             >
@@ -128,16 +167,19 @@ getFilters()
               </div>
             </q-img>
             <q-card-section horizontal>
-              <q-btn no-caps flat :to="{ name: 'Event', params: { id: event.id } }">
+              <q-btn
+                style="width: 100%"
+                no-caps
+                color="grey-9"
+                :to="{ name: 'Event', params: { id: event.id } }"
+              >
                 {{ event.title }}
               </q-btn>
             </q-card-section>
             <q-card-section>
-              {{ event.city.name }} {{ event.category.name }} {{ event.start }}
-              {{ event.end }}
+              город {{ event.city.name }}, {{ formatDate(event.start) }}
             </q-card-section>
           </q-card>
-          <h5 v-if="!eventsData.events.length && !isLoading">Не найдено мероприятий</h5>
         </div>
       </transition>
       <q-inner-loading :showing="isLoading">
@@ -148,38 +190,32 @@ getFilters()
         :loading="isLoadingMore"
         outline
         padding="sm xl"
-        class="page__btn"
+        class="events__btn"
         color="deep-orange"
         @click="loadMore"
       >
         Показать еще
       </q-btn>
     </div>
-  </div>
+  </q-page>
 </template>
 
-<style lang="scss">
+<style scoped lang="scss">
 .container {
   max-width: $breakpoint-md;
   margin: 0 auto;
   padding: 20px;
 }
 
-.page {
+.title {
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.events {
   display: flex;
   flex-direction: column;
   gap: 20px;
-
-  &__controls {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &__select {
-    flex-basis: 350px;
-  }
 
   &__cards {
     display: flex;
@@ -189,8 +225,8 @@ getFilters()
   }
 
   &__card {
-    flex-shrink: 1;
     max-width: 250px;
+    width: 100%;
   }
 
   &__img {

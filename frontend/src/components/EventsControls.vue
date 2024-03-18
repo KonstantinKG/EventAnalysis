@@ -1,96 +1,78 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
 import { ref } from 'vue'
 import type { FiltersData } from 'src/api/types'
 
 defineProps<{ data: FiltersData }>()
 
+const emit = defineEmits<{
+  (e: 'search', value: string): void
+  (e: 'clear'): void
+}>()
+
 const city = defineModel<string | undefined>('city', { required: true })
-const date = defineModel<string | undefined>('date', { required: true })
 const category = defineModel<string | undefined>('category', { required: true })
-const search = defineModel<string | undefined>('search', { required: true })
 
-const $q = useQuasar()
-const isDarkMode = ref($q.dark.isActive)
-
-function toggleTheme(value: boolean) {
-  isDarkMode.value = value
-  $q.dark.set(value)
-}
-
-// function filterCities(val, update) {
-  // if (val === '') {
-  //   update(() => {
-  //     filtersData.value.cities
-  //   })
-  //   return
-  // }
-  //
-  // update(() => {
-  //   const needle = val.toLowerCase()
-  //   filtersData.value.cities = filtersData.value.cities.filter(v => v.name.toLowerCase().indexOf(needle) > -1)
-  // })
-// }
+const search = ref('')
 </script>
 
 <template>
-  <q-btn class="page__date" icon="event" round color="deep-orange">
-    <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-      <q-date v-model="date" today-btn mask="YYYY-MM-DD" color="deep-orange" />
-    </q-popup-proxy>
-  </q-btn>
-  <q-select
-    v-model="city"
-    class="page__select"
-    :options="data.cities"
-    option-value="id"
-    option-label="name"
-    label="Выберите город"
-    filled
-    emit-value
-    map-options
-    clearable
-    use-input
-    input-debounce="0"
-  >
-    <template #prepend>
-      <q-icon name="place" />
-    </template>
-    <template #no-option>
-      <q-item>
-        <q-item-section class="text-grey">Не найдено</q-item-section>
-      </q-item>
-    </template>
-  </q-select>
-  <q-select
-    v-model="category"
-    class="page__select"
-    :options="data.categories"
-    option-value="id"
-    option-label="name"
-    label="Выберите Категорию"
-    filled
-    emit-value
-    map-options
-    clearable
-    use-input
-    input-debounce="0"
-  >
-    <template #no-option>
-      <q-item>
-        <q-item-section class="text-grey">Не найдено</q-item-section>
-      </q-item>
-    </template>
-  </q-select>
-  <q-input   v-model="search" class="page__select" label="Искать по названию" filled />
-  <q-toggle
-    size="lg"
-    color="blue"
-    checked-icon="dark_mode"
-    unchecked-icon="light_mode"
-    :model-value="isDarkMode"
-    @update:model-value="toggleTheme"
-  />
+  <div class="controls">
+    <q-select
+      v-model="city"
+      class="controls__select"
+      :options="data.cities"
+      option-value="id"
+      option-label="name"
+      label="Выберите город"
+      filled
+      emit-value
+      map-options
+      clearable
+    >
+      <template #prepend>
+        <q-icon name="place" />
+      </template>
+    </q-select>
+    <q-input
+      v-model="search"
+      clearable
+      filled
+      label="Искать по названию"
+      class="controls__search"
+      @keyup.enter="emit('search', search)"
+      @clear="emit('clear')"
+    >
+      <template #prepend>
+        <q-icon name="search" />
+      </template>
+    </q-input>
+    <q-select
+      v-model="category"
+      class="controls__select"
+      :options="data.categories"
+      option-value="id"
+      option-label="name"
+      label="Выберите Категорию"
+      filled
+      emit-value
+      map-options
+      clearable
+    />
+  </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  &__search {
+    flex: 1 1 auto;
+  }
+
+  &__select {
+    flex-basis: 250px;
+  }
+}
+</style>

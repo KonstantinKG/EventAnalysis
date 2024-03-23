@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { computed, ref, shallowRef } from 'vue'
 import type { EventData, PricesData } from 'src/api/types'
 import { formatDate } from 'src/helpers/formatDate'
+import { FILES_PATH } from 'src/constants'
 
 const router = useRouter()
 const route = useRoute()
@@ -52,6 +53,9 @@ async function getEvent() {
 
 async function getDatePrises() {
   try {
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight + 46, behavior: 'smooth' })
+    })
     isLoading.value = true
     const { data: eventPricesData } = await EventAnalysisService.getEventDatesPrices(id.value)
     date.value = eventPricesData[0]
@@ -109,7 +113,7 @@ getEvent()
       Назад
     </q-btn>
     <div class="event">
-      <q-img :src="`files/${event.photo.split(/[\\/]/).pop()}`">
+      <q-img :src="`${FILES_PATH}${event.photo.split(/[\\/]/).pop()}`">
         <div class="image-content absolute-bottom">
           <div>{{ event.category.name }}</div>
           <h4>{{ event.title }}</h4>

@@ -5,6 +5,7 @@ import EventAnalysisService from 'src/api'
 import EventsControls from 'components/EventsControls.vue'
 import { formatDate } from 'src/helpers/formatDate'
 import { useQuasar } from 'quasar'
+import { FILES_PATH } from 'src/constants'
 
 const eventsData = ref<AllEventsData>({
   total: 0,
@@ -156,7 +157,7 @@ getFilters()
           <q-card v-for="event in eventsData.events" :key="event.id" class="events__card">
             <q-img
               class="events__img"
-              :src="`files/${event.photo.split(/[\\/]/).pop()}`"
+              :src="`${FILES_PATH}${event.photo.split(/[\\/]/).pop()}`"
               :alt="`Картинка - ${event.title}`"
               fit="cover"
             >
